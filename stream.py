@@ -38,7 +38,9 @@ def preprocessing(tweet):
     
     # Add here your code to preprocess the tweets and remove
     # Emoji patterns, emoticons, symbols & pictographs, transport & map symbols, flags (iOS), etc
-    return re.sub(emoji.get_emoji_regexp(), r'', tweet)
+    modified = re.sub(emoji.get_emoji_regexp(), r'', tweet)
+    modified = re.sub(r"[^a-zA-Z0-9]+", ' ', modified)
+    return modified
 
 def getTweet(status):
     
