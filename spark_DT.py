@@ -1,6 +1,6 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.streaming import StreamingContext
-# from geopy.geocoders import Nominatim
+from geopy.geocoders import Nominatim
 from textblob import TextBlob
 from elasticsearch import Elasticsearch
 
@@ -10,7 +10,15 @@ TCP_IP = 'localhost'
 TCP_PORT = 9001
 
 
+geolocator = Nominatim(user_agent="stream.py")
 
+def getCoordinates(location):
+
+    try:                # location -> latitude, longitude
+        coordinates = geolocator.geocode(location)
+        return coordinates.latitude, coordinates.longitude
+    except:             # invalid address
+        return 999, 999
 
 def processTweet(tweet):
 
@@ -26,9 +34,9 @@ def processTweet(tweet):
     if len(tweetData) > 1:
         
         rawLocation = tweetData[0]
-        lat = tweetData[1]
-        lon = tweetData[2]
-        text = tweetData[3]
+        text = tweetData[1]
+
+        lat, lon = getCoordinates(rawLocation)
 
         # (i) Apply Sentiment analysis in "text"
         sentiment = TextBlob(text).polarity

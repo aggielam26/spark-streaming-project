@@ -3,7 +3,6 @@ import socket
 import re
 import emoji
 import sys
-from geopy.geocoders import Nominatim
 # import preprocessor
 
 
@@ -24,15 +23,7 @@ hashtag = '#covid19' if len(sys.argv) == 1 else sys.argv[1]
 TCP_IP = 'localhost'
 TCP_PORT = 9001
 
-geolocator = Nominatim(user_agent="stream.py")
 
-def getCoordinates(location):
-
-    try:                # location -> latitude, longitude
-        coordinates = geolocator.geocode(location)
-        return coordinates.latitude, coordinates.longitude
-    except:             # invalid address
-        return 999, 999
 
 def preprocessing(tweet):
     
@@ -50,6 +41,7 @@ def preprocessing(tweet):
 
     
     return modified
+
 
 def getTweet(status):
     
@@ -87,9 +79,7 @@ class MyStreamListener(tweepy.StreamListener):
         location, tweet = getTweet(status)
 
         if (location != None and tweet != None):
-            latitude, longitude = getCoordinates(location)
-            
-            tweetLocation = location + "::" + str(latitude) + "::" + str(longitude) + "::" + tweet + "\n"
+            tweetLocation = location + "::" + tweet + "\n"
             print(tweetLocation)
             #print(status.text)
             conn.send(tweetLocation.encode('utf-8'))
