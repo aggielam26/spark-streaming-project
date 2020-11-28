@@ -26,6 +26,7 @@ TCP_PORT = 9001
 
 geolocator = Nominatim(user_agent="stream.py")
 
+
 def getCoordinates(location):
 
     try:                # location -> latitude, longitude
@@ -33,6 +34,22 @@ def getCoordinates(location):
         return coordinates.latitude, coordinates.longitude
     except:             # invalid address
         return 999, 999
+
+def getState(location):
+
+    try:                # location -> latitude, longitude
+        address = geolocator.geocode(location, addressdetails=True)
+        return address.raw['address']['state']
+    except:             # invalid address
+        return 'NA'
+
+def getCountry(location):
+
+    try:                # location -> latitude, longitude
+        address = geolocator.geocode(location, addressdetails=True)
+        return address.raw['address']['country']
+    except:             # invalid address
+        return 'NA'
 
 def preprocessing(tweet):
     
@@ -50,6 +67,7 @@ def preprocessing(tweet):
 
     
     return modified
+
 
 def getTweet(status):
     
@@ -87,10 +105,11 @@ class MyStreamListener(tweepy.StreamListener):
         location, tweet = getTweet(status)
 
         if (location != None and tweet != None):
-            latitude, longitude = getCoordinates(location)
-            
-            tweetLocation = location + "::" + str(latitude) + "::" + str(longitude) + "::" + tweet + "\n"
-            print(tweetLocation)
+            lat, lon = getCoordinates(location)
+            state = getState(location)
+            country = getCountry(location)
+            tweetLocation = location + "::" + str(state) + "::" + str(country) + "::" + str(lat) + "::" + str(lon) + "::" + tweet + "\n"
+            #print(tweetLocation)
             #print(status.text)
             conn.send(tweetLocation.encode('utf-8'))
 
@@ -105,5 +124,3 @@ class MyStreamListener(tweepy.StreamListener):
 
 myStream = tweepy.Stream(auth=auth, listener=MyStreamListener())
 myStream.filter(track=[hashtag], languages=["en"])
-
-
