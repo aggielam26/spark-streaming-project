@@ -90,8 +90,8 @@ class MyStreamListener(tweepy.StreamListener):
             latitude, longitude = getCoordinates(location)
             
             tweetLocation = location + "::" + str(latitude) + "::" + str(longitude) + "::" + tweet + "\n"
-            #print(tweetLocation)
-            print(status.text)
+            print(tweetLocation)
+            #print(status.text)
             conn.send(tweetLocation.encode('utf-8'))
 
         return True
