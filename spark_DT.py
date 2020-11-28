@@ -9,8 +9,8 @@ from elasticsearch import Elasticsearch
 TCP_IP = 'localhost'
 TCP_PORT = 9001
 
-geolocator = Nominatim(user_agent="spark.py")
-# es=Elasticsearch([{'host':'localhost','port':9200}])
+
+geolocator = Nominatim(user_agent="stream.py")
 
 def getCoordinates(location):
 
@@ -20,58 +20,42 @@ def getCoordinates(location):
     except:             # invalid address
         return 999, 999
 
-def getState(location):
-
-    try:                # location -> latitude, longitude
-        address = geolocator.geocode(location, addressdetails=True)
-        return address.raw['address']['state']
-    except:             # invalid address
-        return 'NA'
-
-def getCountry(location):
-
-    try:                # location -> latitude, longitude
-        address = geolocator.geocode(location, addressdetails=True)
-        return address.raw['address']['country']
-    except:             # invalid address
-        return 'NA'
-
-
 def processTweet(tweet):
 
     # Here, you should implement:
     # (i) Sentiment analysis,
     # (ii) Get data corresponding to place where the tweet was generate (using geopy or googlemaps)
     # (iii) Index the data using Elastic Search
+    es=Elasticsearch([{'host':'localhost','port':9200}])
+
 
     tweetData = tweet.split("::")
 
     if len(tweetData) > 1:
-
+        
         rawLocation = tweetData[0]
         text = tweetData[1]
+
+        lat, lon = getCoordinates(rawLocation)
 
         # (i) Apply Sentiment analysis in "text"
         sentiment = TextBlob(text).polarity
 
-        # (ii) Get geolocation (state, country, lat, lon, etc...) from rawLocation
-        lat, lon = getCoordinates(rawLocation)
-        # state = getState(rawLocation)
-        # country = getCountry(rawLocation)
+    # (ii) Get geolocation (state, country, lat, lon, etc...) from rawLocation
 
-        # print("\n\n=========================\ntweet: ", tweet)
-        # print("Raw location from tweet status: ", rawLocation)
-        print("lat: ", lat)
-        print("lon: ", lon)
-        print("state: ", state)
-        print("country: ", country)
+        print("\n\n=========================\ntweet: ", tweet)
+        print("Raw location from tweet status: ", rawLocation)
+        # print("lat: ", lat)
+        # print("lon: ", lon)
+        # print("state: ", state)
+        # print("country: ", country)
         # print("Text: ", text)
         # print("Sentiment: ", sentiment)
-        
-        # (iii) Post the index on ElasticSearch or log your data in some other way (you are always free!!)
-        # esDoc = {"lat":lat, "lon":lon, "sentiment":sentiment}
-        # es.index(index='tweet-sentiment', doc_type='default', body=esDoc)
+        esDoc = {"lat":lat, "lon":lon, "sentiment":sentiment}
 
+        # (iii) Post the index on ElasticSearch or log your data in some other way (you are always free!!)
+        es.index(index='tweet-sentiment', doc_type='default', body=esDoc)
+        
 
 
 
@@ -96,4 +80,4 @@ dataStream.foreachRDD(lambda rdd: rdd.foreach(processTweet))
 
 
 ssc.start()
-ssc.awaitTermination() 
+ssc.awaitTermination()
