@@ -44,7 +44,7 @@ def processTweet(tweet):
         # print("Sentiment: ", sentiment)
         
         # (iii) Post the index on ElasticSearch or log your data in some other way (you are always free!!)
-        esDoc = {"sentiment":sentiment}
+        esDoc = {"lat":lat, "lon":lon, "state":state, "country":country, "sentiment":sentiment}
         es.index(index='tweet-sentiment', doc_type='default', body=esDoc)
 
 
